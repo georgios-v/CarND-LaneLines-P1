@@ -71,19 +71,12 @@ The parameters are:
 <img src="test_images_out/step6_draw.png" width="480" alt="Draw Lines" />
 
 First the identified lines are separated into left and right based on their slope ((y2-y1)/(x2-x1)) being positive or negative respectively.
+
 For each line, the below linear system is solved:
-$$ y = ax + b $$
-$$
-\left(\begin{array}{cc} 
-x1 & 1 \\
-x2 & 1
-\end{array}\right)
-=
-\left(\begin{array}{c} 
-y1 \\
-y2
-\end{array}\right)
-$$
+
+`y = ax + b`
+
+`[x1 , 1 ; x2 , 1] = [y1 ; y2]`
 
 For each group separately, the solutions (a, b) are averaged out by using median. True conditions potentially introduce outliers; a mean average will be greatly affected by those outliers, giving erroneous values for a and b. Median improves on that significantly but not completely. The optional challenge step proves that the effect of the outlier points can be noticeable.
 
