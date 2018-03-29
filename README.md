@@ -14,43 +14,133 @@ To complete the project, two files will be submitted: a file containing project 
 
 To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
 
-
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
 ---
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+## 1. Describe the pipeline
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
+The pipeline consists of 7 steps
 
-**Step 2:** Open the code in a Jupyter Notebook
+**step 1:** Gray-scale
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out <A HREF="https://www.packtpub.com/books/content/basics-jupyter-notebook-and-python" target="_blank">Cyrille Rossant's Basics of Jupyter Notebook and Python</A> to get started.
+<img src="test_images_out/step1_grayscale.jpg" width="480" alt="Grayscale" />
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+The first step converts the input image into gray-scale, as per the given code.
 
-`> jupyter notebook`
+**step 2:** Gaussian Blur
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
+<img src="test_images_out/step2_blur.jpg" width="480" alt="Blur" />
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+Next, Gaussian blur is applied with a kernel size of 5. This smooths out the contrast of contiguous pixels.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+**step 3:** Canny
 
+<img src="test_images_out/step3_canny.jpg" width="480" alt="Canny" />
+
+The Canny algorithm is applied to extract edges of high contrast from the image
+
+**step 4:** Region of Interest
+
+<img src="test_images_out/step4_roi.jpg" width="480" alt="ROI" />
+
+The images is cropped to a isosceles trapezium, as defined by:
+`
+imshape = image.shape
+xshape_adj = imshape[1]/2
+yshape_adj = imshape[0]/2 + 0.1 * imshape[0]
+vertices = np.array([[(0,imshape[0]),(xshape_adj - 0.05*xshape_adj, yshape_adj), (xshape_adj + 0.05*xshape_adj, yshape_adj), (imshape[1],imshape[0])]], dtype=np.int32)
+`
+In the given images the horizon ends a bit further up than halfway, thus the side edges are extended by 10% on the Y axis. Similarly, the top horizontal edge is by 10% smaller than the bottom one, 5% per side.
+
+**step 5:** Hough Transform
+
+<img src="test_images_out/step5_hough.jpg" width="480" alt="Hough" />
+
+The hough transform is applied to extract straight lines
+
+The parameters are:
+`
+    rho = 2 # distance resolution in pixels of the Hough grid
+    theta = np.pi/180 # angular resolution in radians of the Hough grid
+    threshold = 15  # minimum number of votes (intersections in Hough grid cell)
+    min_line_len = 40 # minimum number of pixels making up a line
+    max_line_gap = 20    # maximum gap in pixels between connectible line segments
+`
+
+**step 6:** Draw lines
+
+<img src="test_images_out/step6_draw.jpg" width="480" alt="Draw Lines" />
+
+First the identified lines are separated into left and right based on their slope ((y2-y1)/(x2-x1)) being positive or negative respectively.
+For each line, the below linear system is solved:
+$$ y = ax + b $$
+$$
+\left(\begin{array}{cc} 
+x1 & 1 \\
+x2 & 1
+\end{array}\right)
+=
+\left(\begin{array}{c} 
+y1 \\
+y2
+\end{array}\right)
+$$
+
+For each group separately, the solutions (a, b) are averaged out by using median. True conditions potentially introduce outliers; a mean average will be greatly affected by those outliers, giving erroneous values for a and b. Median improves on that significantly but not completely. The optional challenge step proves that the effect of the outlier points can be noticeable.
+
+Finally one line is drawn per group. Y1, Y2 values are always constant, being the top corners of the ROI trapezium. Thus the median a, b are used to compute X1 and X2 points.
+
+**step 7:** Draw lines on initial image
+
+<img src="test_images_out/step7_draw_initial.jpg" width="480" alt="Draw Lines" />
+
+The lines are now drawn on the initial unedited image which is returned.
+
+
+
+### Alternative Pipeline
+
+For the purposes of solving the optional challenge, I've devised an alternative pipelines. It improves on the original pipeline but does not give excellent results.
+
+The idea is based on color selection from the first sections of this lesson. It is in no way a robust solution.
+
+**alternative step 1:** Region of Interest
+
+<img src="test_images_out/alt_step1_roi.jpg" width="480" alt="ROI" />
+
+The initial image is cropped to the trapezium as defined in the normal pipeline
+
+**alternative step 2:** Color selection & Gray-scale
+
+<img src="test_images_out/alt_step2_cs.jpg" width="480" alt="CS" />
+
+Color selection is applied where the thresholds are shown below; a list of values denotes the unacceptable range.
+`
+    red_threshold = 200
+    green_threshold = 200
+    blue_threshold = (70, 180)
+`
+Then the image is transformed to gray-scale.
+
+
+**alternative step 3:** Hough Transform & Draw lines
+
+<img src="test_images_out/alt_step3_hough.jpg" width="480" alt="Hough" />
+
+Hough Transform is applied on the gray-scale color selected image. Parameters are the same as with the normal process.
+
+Finally, the same draw lines method is applied here again.
+
+
+**conditional alternative step 4:** Fallback
+
+Often the color-selection method failed to identify any lines, leading to an empty output by the Hough Transform. At that point the pipeline falls back to the original pipeline and continues from step 5.
+
+
+## 2. Identify any shortcomings
+
+The optional challenge proved that the median is not the best function, as it is still affected by a high number of outliers. Color selection is not a viable solution as it greatly depends on lighting and humidity conditions.
+
+
+## 3. Suggest possible improvements
+
+A potential improvement is the exclusion of outliers. Regression analysis, or the interquartile range are examples on how to proceed.
