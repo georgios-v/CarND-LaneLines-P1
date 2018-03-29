@@ -1,7 +1,7 @@
 # **Finding Lane Lines on the Road** 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+<img src="examples/laneLines_thirdPass.png" width="480" alt="Combined Image" />
 
 Overview
 ---
@@ -22,25 +22,25 @@ The pipeline consists of 7 steps
 
 **step 1:** Gray-scale
 
-<img src="test_images_out/step1_grayscale.jpg" width="480" alt="Grayscale" />
+<img src="test_images_out/step1_grayscale.png" width="480" alt="Grayscale" />
 
 The first step converts the input image into gray-scale, as per the given code.
 
 **step 2:** Gaussian Blur
 
-<img src="test_images_out/step2_blur.jpg" width="480" alt="Blur" />
+<img src="test_images_out/step2_blur.png" width="480" alt="Blur" />
 
 Next, Gaussian blur is applied with a kernel size of 5. This smooths out the contrast of contiguous pixels.
 
 **step 3:** Canny
 
-<img src="test_images_out/step3_canny.jpg" width="480" alt="Canny" />
+<img src="test_images_out/step3_canny.png" width="480" alt="Canny" />
 
 The Canny algorithm is applied to extract edges of high contrast from the image
 
 **step 4:** Region of Interest
 
-<img src="test_images_out/step4_roi.jpg" width="480" alt="ROI" />
+<img src="test_images_out/step4_roi.png" width="480" alt="ROI" />
 
 The images is cropped to a isosceles trapezium, as defined by:
 `
@@ -53,7 +53,7 @@ In the given images the horizon ends a bit further up than halfway, thus the sid
 
 **step 5:** Hough Transform
 
-<img src="test_images_out/step5_hough.jpg" width="480" alt="Hough" />
+<img src="test_images_out/step5_hough.png" width="480" alt="Hough" />
 
 The hough transform is applied to extract straight lines
 
@@ -68,7 +68,7 @@ The parameters are:
 
 **step 6:** Draw lines
 
-<img src="test_images_out/step6_draw.jpg" width="480" alt="Draw Lines" />
+<img src="test_images_out/step6_draw.png" width="480" alt="Draw Lines" />
 
 First the identified lines are separated into left and right based on their slope ((y2-y1)/(x2-x1)) being positive or negative respectively.
 For each line, the below linear system is solved:
@@ -91,7 +91,7 @@ Finally one line is drawn per group. Y1, Y2 values are always constant, being th
 
 **step 7:** Draw lines on initial image
 
-<img src="test_images_out/step7_draw_initial.jpg" width="480" alt="Draw Lines" />
+<img src="test_images_out/step7_draw_initial.png" width="480" alt="Draw Lines" />
 
 The lines are now drawn on the initial unedited image which is returned.
 
@@ -105,13 +105,13 @@ The idea is based on color selection from the first sections of this lesson. It 
 
 **alternative step 1:** Region of Interest
 
-<img src="test_images_out/alt_step1_roi.jpg" width="480" alt="ROI" />
+<img src="test_images_out/alt_step1_roi.png" width="480" alt="ROI" />
 
 The initial image is cropped to the trapezium as defined in the normal pipeline
 
 **alternative step 2:** Color selection & Gray-scale
 
-<img src="test_images_out/alt_step2_cs.jpg" width="480" alt="CS" />
+<img src="test_images_out/alt_step2_cs.png" width="480" alt="CS" />
 
 Color selection is applied where the thresholds are shown below; a list of values denotes the unacceptable range.
 `
@@ -124,7 +124,7 @@ Then the image is transformed to gray-scale.
 
 **alternative step 3:** Hough Transform & Draw lines
 
-<img src="test_images_out/alt_step3_hough.jpg" width="480" alt="Hough" />
+<img src="test_images_out/alt_step3_hough.png" width="480" alt="Hough" />
 
 Hough Transform is applied on the gray-scale color selected image. Parameters are the same as with the normal process.
 
